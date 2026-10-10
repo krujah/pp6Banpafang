@@ -672,10 +672,10 @@ function renderAdmin(){
     <div class="row" style="margin-top:10px"><button class="btn ghost" id="addUser">+ เพิ่มผู้ใช้</button><span class="grow"></span><button class="btn" id="saveUsers">บันทึกผู้ใช้งาน</button></div>
   </div>
 
-  <div class="card"><h2>นำเข้าจากไฟล์ CSV</h2>
-    <div class="help"><b>รายชื่อนักเรียนทุกชั้น</b> — คอลัมน์: class,no,name (ชั้น ป.1–6) · <b>ครูและวิชาที่รับผิดชอบ</b> — คอลัมน์: username,pin,name,role,homeroom,assign (role = admin/teacher · assign คั่นหลายวิชาด้วย ; เช่น 6:ค16101;5:ค15101) · ผู้ใช้ที่มีชื่อผู้ใช้เดิมจะถูกอัปเดต ส่วนคนอื่นยังอยู่ครบ</div>
-    <div class="row"><label class="btn ghost">นำเข้ารายชื่อนักเรียน (CSV)<input type="file" accept=".csv,text/csv" id="impStu" class="hide"></label>
-    <label class="btn ghost">นำเข้าครู/วิชาที่รับผิดชอบ (CSV)<input type="file" accept=".csv,text/csv" id="impUsr" class="hide"></label></div>
+  <div class="card"><h2>นำเข้าจากไฟล์ Excel / CSV</h2>
+    <div class="help"><b>รายชื่อนักเรียน</b> — อัปโหลดไฟล์ทะเบียนนักเรียน .xlsx ได้โดยตรง (ชีตชื่อ 1–6 มีคอลัมน์ ที่ / ชื่อ-สกุล) หรือ CSV แบบ class,no,name · <b>ครูและวิชาที่รับผิดชอบ</b> — คอลัมน์: username,pin,name,role,homeroom,assign (role = admin/teacher · assign คั่นหลายวิชาด้วย ; เช่น 6:ค16101;5:ค15101) · ผู้ใช้ที่มีชื่อผู้ใช้เดิมจะถูกอัปเดต ส่วนคนอื่นยังอยู่ครบ</div>
+    <div class="row"><label class="btn ghost">นำเข้ารายชื่อนักเรียน (Excel/CSV)<input type="file" accept=".csv,.xlsx,.xls" id="impStu" class="hide"></label>
+    <label class="btn ghost">นำเข้าครู/วิชาที่รับผิดชอบ (Excel/CSV)<input type="file" accept=".csv,.xlsx,.xls" id="impUsr" class="hide"></label></div>
   </div>
   <div class="card"><h2>3) รายชื่อนักเรียน และรายวิชา</h2>
     <div class="row"><label>ชั้น <select class="t" id="aCls" style="width:auto">${CLASSES.map(x=>`<option value="${x}" ${x===UI.acls?'selected':''}>ประถมศึกษาปีที่ ${x}</option>`).join('')}</select></label></div>
@@ -693,22 +693,48 @@ function renderAdmin(){
   </div>
   ${DEMO?`<div class="card"><h2>โหมดทดลอง</h2><p class="muted">ข้อมูลทดลองเก็บในเบราว์เซอร์นี้เท่านั้น</p><button class="btn danger" id="resetDemo">ล้างข้อมูลทดลองและเริ่มใหม่</button></div>`:''}`;
 
-  const readCsv=f=>new Promise(res=>{const r=new FileReader();r.onload=()=>{const t=String(r.result).replace(/^\uFEFF/,'');res(t.split(/\r?\n/).filter(l=>l.trim()).map(l=>{const o=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){o.push(cur);cur='';}else cur+=ch;}o.push(cur);return o.map(x=>x.trim());}));};r.readAsText(f,'utf-8');});
+  const parseCsvText=t=>t.replace(/^﻿/,'').split(/\r?\n/).filter(l=>l.trim()).map(l=>{const o=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===','&&!q){o.push(cur);cur='';}else cur+=ch;}o.push(cur);return o.map(x=>x.trim());});
+  const loadXlsxLib=()=>window.XLSX?Promise.resolve():new Promise((ok,no)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';sc.onload=ok;sc.onerror=()=>no(new Error('โหลดตัวอ่านไฟล์ Excel ไม่ได้ (ต้องเชื่อมต่ออินเทอร์เน็ต)'));document.head.appendChild(sc);});
+  // อ่านไฟล์ .csv / .xlsx / .xls -> { ชื่อชีต: [[แถว]] }
+  const readAny=async f=>{
+    const buf=await f.arrayBuffer();
+    if(/\.xlsx?$/i.test(f.name)){ await loadXlsxLib(); const wb=XLSX.read(buf,{type:'array'}); const o={}; wb.SheetNames.forEach(n=>{o[n]=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''}).map(r=>r.map(x=>String(x==null?'':x).trim()));}); return o; }
+    let t; try{ t=new TextDecoder('utf-8',{fatal:true}).decode(buf); }catch(e){ t=new TextDecoder('windows-874').decode(buf); }
+    return {csv:parseCsvText(t)};
+  };
+  const normName=n=>String(n).replace(/\s+/g,' ').trim().replace(/^ด\.ช\.\s*/,'เด็กชาย').replace(/^ด\.ญ\.\s*/,'เด็กหญิง').replace(/^(เด็กชาย|เด็กหญิง)\s+/,'$1');
   $('#impStu').onchange=async e=>{
-    const f=e.target.files[0]; if(!f) return; const rows=(await readCsv(f)).filter(r=>/^[1-6]$/.test(r[0]));
-    if(!rows.length) return toast('ไม่พบข้อมูล (ต้องมีคอลัมน์ class,no,name และ class เป็น 1–6)');
-    const by={}; rows.forEach(r=>(by[r[0]]=by[r[0]]||[]).push({no:Number(r[1]),name:r[2]}));
-    if(!confirm('นำเข้านักเรียน '+rows.length+' คน ใน '+Object.keys(by).length+' ชั้น (แทนที่รายชื่อเดิมของชั้นเหล่านั้น)?')) return;
+    const f=e.target.files[0]; e.target.value=''; if(!f) return;
+    let data; try{ data=await readAny(f);}catch(err){ return toast(err.message); }
+    const by={};
+    Object.keys(data).forEach(sn=>{
+      const rows=data[sn];
+      if(sn==='csv'){ rows.filter(r=>/^[1-6]$/.test(r[0])&&r[2]).forEach(r=>(by[r[0]]=by[r[0]]||[]).push({no:Number(r[1]),name:normName(r[2])})); return; }
+      const m=sn.match(/(?:ป\.?\s*)?([1-6])\s*$/); if(!m||/อ\./.test(sn)) return;            // ชีตชื่อ 1–6 หรือ ป.1–ป.6
+      const hi=rows.findIndex(r=>r.includes('ชื่อ-สกุล')); if(hi<0) return;
+      const ci=rows[hi].indexOf('ชื่อ-สกุล'), ni=rows[hi].indexOf('ที่');
+      rows.slice(hi+1).forEach(r=>{ const no=Number(r[ni>=0?ni:0]); if(no>0&&r[ci]) (by[m[1]]=by[m[1]]||[]).push({no,name:normName(r[ci])}); });
+    });
+    const total=Object.values(by).reduce((a,x)=>a+x.length,0);
+    if(!total) return toast('ไม่พบรายชื่อ — ไฟล์ Excel ต้องมีชีตชื่อ 1–6 และหัวคอลัมน์ “ที่ / ชื่อ-สกุล” หรือไฟล์ CSV แบบ class,no,name');
+    const sum=Object.keys(by).sort().map(c=>'ป.'+c+' '+by[c].length+' คน').join(', ');
+    if(!confirm('พบนักเรียน '+total+' คน ('+sum+')\nนำเข้า โดยแทนที่รายชื่อเดิมของชั้นเหล่านี้หรือไม่?')) return;
     for(const c of Object.keys(by)){ const r=await api('adminSave',{table:'Students',cls:c,rows:by[c]}); if(!r.ok) return toast(r.message||'นำเข้าไม่สำเร็จ'); }
-    await loadData(); toast('นำเข้ารายชื่อแล้ว'); renderAdmin();
+    await loadData(); toast('นำเข้ารายชื่อ '+total+' คนแล้ว'); renderAdmin();
   };
   $('#impUsr').onchange=async e=>{
-    const f=e.target.files[0]; if(!f) return; let rows=await readCsv(f); if(rows[0]&&rows[0][0].toLowerCase()==='username') rows=rows.slice(1);
-    rows=rows.filter(r=>r[0]&&r[1]); if(!rows.length) return toast('ไม่พบข้อมูลผู้ใช้');
+    const f=e.target.files[0]; e.target.value=''; if(!f) return;
+    let data; try{ data=await readAny(f);}catch(err){ return toast(err.message); }
+    let rows=data[Object.keys(data)[0]]||[];
+    const hi=rows.findIndex(r=>String(r[0]).toLowerCase()==='username'); rows=rows.slice(hi>=0?hi+1:0);
+    rows=rows.filter(r=>r[0]&&r[1]); if(!rows.length) return toast('ไม่พบข้อมูลผู้ใช้ (คอลัมน์: username,pin,name,role,homeroom,assign)');
     const m=new Map(S.users.map(u=>[u.username.toLowerCase(),Object.assign({},u)]));
-    rows.forEach(r=>m.set(r[0].toLowerCase(),{username:r[0],pin:r[1],name:r[2]||r[0],role:r[3]==='admin'?'admin':'teacher',homeroom:/^[1-6]$/.test(r[4]||'')?r[4]:'',assign:(r[5]||'').split(/[;,]/).map(x=>x.trim()).filter(Boolean).join(',')}));
+    let add=0,upd=0;
+    rows.forEach(r=>{ const k=r[0].toLowerCase(); m.has(k)?upd++:add++;
+      m.set(k,{username:r[0],pin:r[1],name:r[2]||r[0],role:r[3]==='admin'?'admin':'teacher',homeroom:/^[1-6]$/.test(r[4]||'')?r[4]:'',assign:(r[5]||'').split(/[;,]/).map(x=>x.trim()).filter(Boolean).join(',')}); });
+    if(!confirm('เพิ่มผู้ใช้ใหม่ '+add+' คน, อัปเดตผู้ใช้เดิม '+upd+' คน\nดำเนินการต่อหรือไม่?')) return;
     const r=await api('adminSave',{table:'Users',rows:[...m.values()]}); if(!r.ok) return toast(r.message||'นำเข้าไม่สำเร็จ');
-    await loadData(); toast('นำเข้าผู้ใช้ '+rows.length+' คนแล้ว'); renderAdmin();
+    await loadData(); toast('นำเข้าผู้ใช้เรียบร้อย (เพิ่ม '+add+', อัปเดต '+upd+')'); renderAdmin();
   };
   /* ---- config ---- */
   $('#saveCfg').onclick=async()=>{
