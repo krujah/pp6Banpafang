@@ -113,7 +113,7 @@ td.miss{background:var(--warn-l)!important}
 .sheet td.vt{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-weight:700;padding:0}
 .sheet{font-feature-settings:"locl" 0}
 .sheet .sig .ln{display:block;margin-bottom:2px}
-.sheet .n{display:inline-block;font-family:Sarabun,"Noto Sans Thai",Arial,sans-serif;font-size:.88em;line-height:1;font-feature-settings:"locl" 0,"ccmp" 0,"liga" 0,"clig" 0,"calt" 0,"rlig" 0}
+.sheet .n{display:inline-block;font-family:Sarabun,"Noto Sans Thai",Arial,sans-serif;font-size:.68em;line-height:1;font-feature-settings:"locl" 0,"ccmp" 0,"liga" 0,"clig" 0,"calt" 0,"rlig" 0}
 .sheet .low{display:flex;align-items:stretch;margin-top:-1px;font-size:calc(14*var(--u))}
 .sheet .lc{width:85mm;flex:none;border-left:1px solid #000;border-bottom:1px solid #000}
 .sheet .lt{margin-left:-1px;margin-bottom:-1px;width:calc(100% + 1px)}
@@ -156,7 +156,7 @@ td.miss{background:var(--warn-l)!important}
     <label class="f" for="lp">รหัสผ่าน</label>
     <input class="t" id="lp" type="password" autocomplete="current-password" required>
     <div class="err" id="loginErr"></div>
-    <div class="muted" style="font-size:.8rem;margin-top:8px;text-align:center">เวอร์ชันหน้าเว็บ v5 · 10 ต.ค. 2569</div>
+    <div class="muted" style="font-size:.8rem;margin-top:8px;text-align:center">เวอร์ชันหน้าเว็บ v6 · 10 ต.ค. 2569</div>
     <button class="btn" style="width:100%;margin-top:6px">เข้าสู่ระบบ</button>
     <div class="demo-note hide" id="demoNote">
       <b>โหมดทดลอง</b> (ยังไม่ได้ตั้งค่า API_URL — ข้อมูลเก็บในเบราว์เซอร์นี้เท่านั้น)<br>
@@ -644,7 +644,7 @@ function pp6Page(cls,no){
 }
 function openPreview(cls,nos){
   const pv=$('#pv');
-  pv.innerHTML=`<div class="bar"><b class="grow">ตัวอย่างก่อนพิมพ์ (v5) · ปพ.6 ป.${cls} (${nos.length} หน้า)</b><span class="muted">ในหน้าต่างพิมพ์: ขนาดกระดาษ A4 · ระยะขอบ “ไม่มี” · ปิด “ส่วนหัวและส่วนท้าย”</span><button class="btn" id="pvPrint">พิมพ์</button><button class="btn ghost" id="pvClose">ปิด</button></div><div class="pages">${nos.map(n=>pp6Page(cls,n)).join('')}</div>`;
+  pv.innerHTML=`<div class="bar"><b class="grow">ตัวอย่างก่อนพิมพ์ (v6) · ปพ.6 ป.${cls} (${nos.length} หน้า)</b><span class="muted">ในหน้าต่างพิมพ์: ขนาดกระดาษ A4 · ระยะขอบ “ไม่มี” · ปิด “ส่วนหัวและส่วนท้าย”</span><button class="btn" id="pvPrint">พิมพ์</button><button class="btn ghost" id="pvClose">ปิด</button></div><div class="pages">${nos.map(n=>pp6Page(cls,n)).join('')}</div>`;
   pv.classList.remove('hide'); $('#pvPrint').onclick=()=>window.print(); $('#pvClose').onclick=()=>pv.classList.add('hide');
 }
 function openSummaryPreview(cls){
