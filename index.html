@@ -14,8 +14,8 @@
   --fs:1rem;
 }
 *{box-sizing:border-box}
-html{font-size:17px}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"TH Sarabun PSK","TH SarabunPSK","THSarabunPSK","TH Sarabun New",Sarabun,sans-serif;line-height:1.4}
+html{font-size:20px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Sarabun,"Noto Sans Thai","Leelawadee UI",Tahoma,sans-serif;line-height:1.45}
 button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer}
 .hide{display:none!important}
@@ -47,7 +47,7 @@ header.top .btn:hover{background:rgba(255,255,255,.15)}
 nav.tabs{background:#fff;border-bottom:1px solid var(--line);display:flex;gap:2px;padding:0 12px;overflow-x:auto}
 nav.tabs button{border:0;background:none;padding:12px 16px;border-bottom:3px solid transparent;font-weight:600;color:var(--muted);white-space:nowrap}
 nav.tabs button.on{color:var(--brand-d);border-bottom-color:var(--brand)}
-main{max-width:1180px;margin:0 auto;padding:18px 16px 60px}
+main{max-width:1320px;margin:0 auto;padding:18px 16px 60px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
 .card h2{margin:0 0 10px;font-size:1.2rem}
 .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
@@ -62,19 +62,19 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 60px}
 .chip .bar i{display:block;height:100%;background:var(--brand)}
 .chip.done .bar i{background:var(--ok)}
 table.g{border-collapse:collapse;width:100%}
-table.g th,table.g td{border:1px solid var(--line);padding:4px 8px;text-align:left}
+table.g th,table.g td{border:1px solid var(--line);padding:6px 10px;text-align:left}
 table.g th{background:#eaf1f4;position:sticky;top:0;z-index:1;font-weight:600}
 table.g td.num,table.g th.num{text-align:center}
 table.g td:nth-child(2){white-space:nowrap}
 table.g tr:nth-child(even) td{background:#fafcfd}
 .scroll{overflow:auto;max-height:68vh;border-radius:8px}
-input.cell{width:100%;min-width:62px;border:1px solid transparent;background:transparent;padding:5px 6px;text-align:center;border-radius:4px}
+input.cell{width:100%;min-width:72px;border:1px solid transparent;background:transparent;padding:8px 6px;font-size:1.1rem;font-weight:600;text-align:center;border-radius:4px}
 input.cell:hover{border-color:var(--line)}
 input.cell.bad{background:var(--bad-l);border-color:var(--bad)}
 select.cell{width:100%;min-width:92px;border:1px solid transparent;background:transparent;padding:5px 4px;border-radius:4px}
 select.cell:hover{border-color:var(--line)}
 td.miss{background:var(--warn-l)!important}
-.status{font-size:.92rem;border-radius:999px;padding:3px 12px;font-weight:600}
+.status{font-size:.95rem;border-radius:999px;padding:3px 12px;font-weight:600}
 .status.saved{background:var(--ok-l);color:var(--ok)}
 .status.saving{background:var(--warn-l);color:var(--warn)}
 .status.error{background:var(--bad-l);color:var(--bad)}
@@ -110,9 +110,10 @@ td.miss{background:var(--warn-l)!important}
 .sheet td.c{text-align:center}
 .sheet td.b{font-weight:700}
 .sheet td.vt{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-weight:700;padding:0}
+.sheet{font-feature-settings:"locl" 0}
 .sheet table.low{margin-top:-1px}
-.sheet table.low td{height:8.4mm}
-.sheet .sig{text-align:center;vertical-align:top;padding-top:4px;line-height:1.45}
+.sheet table.low td{height:10.2mm}
+.sheet .sig{text-align:center;vertical-align:top;padding:3px 3px 0;line-height:1.32;white-space:nowrap}
 .sheet .sig .ln{display:block;margin-bottom:2px}
 .sheet table.ov{font-size:calc(11*var(--u));table-layout:fixed}
 .sheet table.ov td.nm{white-space:nowrap;overflow:hidden}
@@ -132,7 +133,7 @@ td.miss{background:var(--warn-l)!important}
   .sheet{box-shadow:none;margin:0;page-break-after:always;break-after:page}
   .sheet:last-child{page-break-after:auto;break-after:auto}
 }
-@media (max-width:640px){html{font-size:16px}main{padding:12px 8px 50px}.card{padding:12px}}
+@media (max-width:640px){html{font-size:18px}main{padding:12px 8px 50px}.card{padding:12px}}
 </style>
 </head>
 <body>
@@ -600,9 +601,13 @@ function pp6Page(cls,no){
   const hr=S.homeroomNames[cls]||'';
   const date=thaiDate(c.printDate);
   const sig=(name,title,withDate=true)=>`<span class="ln">ลงชื่อ.......................................................</span><span class="ln">( ${esc(name)} )</span><span class="ln">${esc(title)}</span>${withDate?`<span class="ln">${date}</span>`:''}`;
-  const lowRows=[['a_attr'],['a_read'],['a_val'],['a_comp']].map(([id])=>`<tr><td class="b" colspan="2">${esc(ASSESS_BY[id].name)}</td><td class="c">${esc(g(id))}</td></tr>`).join('');
-  const act=['a_guide','a_scout','a_club','a_social'].map(id=>`<tr><td style="width:7mm;border-top:0;border-bottom:0"></td><td>${esc(ASSESS_BY[id].name)}</td><td class="c">${esc(g(id))}</td></tr>`).join('');
-  return `<section class="sheet">
+  const acts=['a_guide','a_scout','a_club','a_social'];
+  const sigCell=`<td class="sig" rowspan="10">
+      ${sig(hr||'………………………………','ครูประจำชั้นประถมศึกษาปีที่ '+cls)}<br>
+      ${sig(c.headName,c.headTitle)}<br>
+      ${sig(c.dirName,c.dirTitle)}<br>
+      <span class="ln">ลงชื่อ.......................................................</span><span class="ln">( ........................................................ )</span><span class="ln">ผู้ปกครองนักเรียน</span></td>`;
+  return `<section class="sheet" lang="en">
   <h4>แบบรายงานประจำตัวนักเรียน : ผลการพัฒนาคุณภาพผู้เรียนรายบุคคล (ปพ.6)</h4>
   <h4>${esc(c.school)} ${esc(c.area)}</h4>
   <h4>ชั้นประถมศึกษาปีที่ ${esc(cls)} ภาคเรียนที่ ${esc(c.term)} ปีการศึกษา ${esc(c.year)}</h4>
@@ -615,19 +620,14 @@ function pp6Page(cls,no){
     <tr><td class="c b" colspan="3">รวม</td><td class="c b">${t.max}</td><td class="c b">${t.filled?fmtNum(t.total):''}</td><td></td></tr>
     <tr><td class="c b" colspan="3">คะแนนคิดเป็นร้อยละ</td><td></td><td class="c b">${t.filled?fmt2(t.pct):''}</td><td></td></tr>
   </table>
-  <table class="low"><colgroup><col style="width:90mm"><col style="width:auto"></colgroup><tr>
-    <td style="padding:0;vertical-align:top;border:0;border-left:1px solid #000;border-bottom:1px solid #000">
-      <table style="margin:0;height:100%"><colgroup><col style="width:7mm"><col><col style="width:17mm"></colgroup>
-      ${lowRows}
-      <tr><td class="b" colspan="2">ผลการประเมินกิจกรรมพัฒนาผู้เรียน</td><td></td></tr>
-      ${act}
-      <tr><td class="b" colspan="2">คะแนนรวมได้ลำดับที่</td><td class="c">${c.rankOn==='1'&&rk?rk:''}</td></tr></table></td>
-    <td class="sig" style="border-top:0">
-      ${sig(hr||'………………………………','ครูประจำชั้นประถมศึกษาปีที่ '+cls)}<br>
-      ${sig(c.headName,c.headTitle)}<br>
-      ${sig(c.dirName,c.dirTitle)}<br>
-      <span class="ln">ลงชื่อ.......................................................</span><span class="ln">( ........................................................ )</span><span class="ln">ผู้ปกครองนักเรียน</span>
-    </td></tr></table>
+  <table class="low">
+    <colgroup><col style="width:7mm"><col><col style="width:17mm"><col style="width:84mm"></colgroup>
+    <tr><td class="b" colspan="2">ผลการประเมินคุณลักษณะอันพึงประสงค์</td><td class="c">${esc(g('a_attr'))}</td>${sigCell}</tr>
+    ${['a_read','a_val','a_comp'].map(id=>`<tr><td class="b" colspan="2">${esc(ASSESS_BY[id].name)}</td><td class="c">${esc(g(id))}</td></tr>`).join('')}
+    <tr><td class="b" colspan="2">ผลการประเมินกิจกรรมพัฒนาผู้เรียน</td><td></td></tr>
+    ${acts.map((id,i)=>`<tr>${i===0?'<td rowspan="4"></td>':''}<td>${esc(ASSESS_BY[id].name)}</td><td class="c">${esc(g(id))}</td></tr>`).join('')}
+    <tr><td class="b" colspan="2">คะแนนรวมได้ลำดับที่</td><td class="c">${c.rankOn==='1'&&rk?rk:''}</td></tr>
+  </table>
   </section>`;
 }
 function openPreview(cls,nos){
