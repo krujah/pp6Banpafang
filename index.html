@@ -156,7 +156,7 @@ td.miss{background:var(--warn-l)!important}
     <label class="f" for="lp">รหัสผ่าน</label>
     <input class="t" id="lp" type="password" autocomplete="current-password" required>
     <div class="err" id="loginErr"></div>
-    <div class="muted" style="font-size:.8rem;margin-top:8px;text-align:center">เวอร์ชันหน้าเว็บ v6 · 10 ต.ค. 2569</div>
+    <div class="muted" style="font-size:.8rem;margin-top:8px;text-align:center">เวอร์ชันหน้าเว็บ v7 · 10 ต.ค. 2569</div>
     <button class="btn" style="width:100%;margin-top:6px">เข้าสู่ระบบ</button>
     <div class="demo-note hide" id="demoNote">
       <b>โหมดทดลอง</b> (ยังไม่ได้ตั้งค่า API_URL — ข้อมูลเก็บในเบราว์เซอร์นี้เท่านั้น)<br>
@@ -548,16 +548,20 @@ function renderOther(){
   $('#main').innerHTML=`<div class="card">
     <div class="row"><h2 class="grow" style="margin:0">ผลการประเมินคุณลักษณะ และกิจกรรมพัฒนาผู้เรียน</h2>
     ${cl.length>1?`<label>ชั้น <select class="t" id="selCls" style="width:auto">${cl.map(c=>`<option value="${c}" ${c===UI.cls?'selected':''}>ประถมศึกษาปีที่ ${c}</option>`).join('')}</select></label>`:`<b>ประถมศึกษาปีที่ ${UI.cls}</b>`}</div>
-    <div class="help">เลือกผลของนักเรียนแต่ละคน หรือใช้ปุ่ม <b>“ทั้งห้อง”</b> ใต้หัวคอลัมน์เพื่อตั้งค่าให้ช่องที่ยังว่างทั้งหมดในครั้งเดียว</div>
-    ${!stu.length?'<p class="muted">ยังไม่มีรายชื่อนักเรียนในชั้นนี้</p>':`<div class="scroll"><table class="g"><thead><tr><th class="num" style="width:56px">เลขที่</th><th>ชื่อ-สกุล</th>${cols.map(a=>`<th class="num">${esc(a.short)}<br><select class="t" data-all="${a.id}" style="padding:2px;font-weight:400"><option value="">ทั้งห้อง…</option>${a.opts.map(o=>`<option>${o}</option>`).join('')}</select></th>`).join('')}</tr></thead>
+    <div class="help">เลือกผลของนักเรียนแต่ละคน หรือใช้ช่อง <b>“ตั้งทั้งห้อง…”</b> ใต้หัวคอลัมน์เพื่อเปลี่ยนทั้งห้องในครั้งเดียว (แก้ซ้ำได้ ระบบจะถามยืนยันก่อน) หรือเลือก “ล้างทั้งห้อง”</div>
+    ${!stu.length?'<p class="muted">ยังไม่มีรายชื่อนักเรียนในชั้นนี้</p>':`<div class="scroll"><table class="g"><thead><tr><th class="num" style="width:56px">เลขที่</th><th>ชื่อ-สกุล</th>${cols.map(a=>`<th class="num">${esc(a.short)}<br><select class="t" data-all="${a.id}" style="padding:2px;font-weight:400"><option value="">ตั้งทั้งห้อง…</option>${a.opts.map(o=>`<option>${o}</option>`).join('')}<option value="__clear">ล้างทั้งห้อง</option></select></th>`).join('')}</tr></thead>
     <tbody>${stu.map(s=>`<tr><td class="num">${s.no}</td><td>${esc(s.name)}</td>${cols.map(a=>{const v=S.scores[sk(UI.cls,s.no,a.id)]||'';return `<td><select class="cell" data-no="${s.no}" data-id="${a.id}"><option value=""></option>${a.opts.map(o=>`<option ${o===v?'selected':''}>${o}</option>`).join('')}</select></td>`}).join('')}</tr>`).join('')}</tbody></table></div>`}
   </div>`;
   $('#selCls')&&($('#selCls').onchange=e=>{UI.cls=e.target.value;renderOther();});
   $('#main').querySelectorAll('select.cell').forEach(sel=>sel.onchange=()=>setVal(UI.cls,Number(sel.dataset.no),sel.dataset.id,sel.value));
   $('#main').querySelectorAll('select[data-all]').forEach(sel=>sel.onchange=()=>{
-    if(!sel.value) return; const id=sel.dataset.all;
-    stu.forEach(s=>{ if(S.scores[sk(UI.cls,s.no,id)]===undefined) setVal(UI.cls,s.no,id,sel.value); });
-    renderOther(); toast('ตั้งค่าช่องที่ว่างเรียบร้อย');
+    if(!sel.value) return; const id=sel.dataset.all, clear=sel.value==='__clear', v=clear?'':sel.value;
+    const changing=stu.filter(s=>(S.scores[sk(UI.cls,s.no,id)]||'')!==v);
+    const filled=changing.filter(s=>S.scores[sk(UI.cls,s.no,id)]!==undefined).length;
+    if(!changing.length){ sel.value=''; return toast('ทุกช่องเป็นค่านี้อยู่แล้ว'); }
+    if((filled||clear) && !confirm((clear?'ล้างผล':'เปลี่ยนผลเป็น “'+v+'”')+' ของนักเรียน '+changing.length+' คน'+(filled&&!clear?' (รวม '+filled+' คนที่เคยกรอกไว้แล้วจะถูกเปลี่ยน)':'')+' ใช่หรือไม่?')){ sel.value=''; return; }
+    changing.forEach(s=>setVal(UI.cls,s.no,id,v));
+    renderOther(); toast(clear?'ล้างทั้งห้องแล้ว':'ตั้งค่าทั้งห้องเป็น “'+v+'” แล้ว');
   });
 }
 
@@ -644,7 +648,7 @@ function pp6Page(cls,no){
 }
 function openPreview(cls,nos){
   const pv=$('#pv');
-  pv.innerHTML=`<div class="bar"><b class="grow">ตัวอย่างก่อนพิมพ์ (v6) · ปพ.6 ป.${cls} (${nos.length} หน้า)</b><span class="muted">ในหน้าต่างพิมพ์: ขนาดกระดาษ A4 · ระยะขอบ “ไม่มี” · ปิด “ส่วนหัวและส่วนท้าย”</span><button class="btn" id="pvPrint">พิมพ์</button><button class="btn ghost" id="pvClose">ปิด</button></div><div class="pages">${nos.map(n=>pp6Page(cls,n)).join('')}</div>`;
+  pv.innerHTML=`<div class="bar"><b class="grow">ตัวอย่างก่อนพิมพ์ (v7) · ปพ.6 ป.${cls} (${nos.length} หน้า)</b><span class="muted">ในหน้าต่างพิมพ์: ขนาดกระดาษ A4 · ระยะขอบ “ไม่มี” · ปิด “ส่วนหัวและส่วนท้าย”</span><button class="btn" id="pvPrint">พิมพ์</button><button class="btn ghost" id="pvClose">ปิด</button></div><div class="pages">${nos.map(n=>pp6Page(cls,n)).join('')}</div>`;
   pv.classList.remove('hide'); $('#pvPrint').onclick=()=>window.print(); $('#pvClose').onclick=()=>pv.classList.add('hide');
 }
 function openSummaryPreview(cls){
