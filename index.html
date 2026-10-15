@@ -97,7 +97,7 @@ td.miss{background:var(--warn-l)!important}
 #pv{position:fixed;inset:0;background:#6b7a83;z-index:300;overflow:auto;padding-bottom:40px}
 #pv .bar{position:sticky;top:0;background:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;z-index:2;border-bottom:1px solid var(--line)}
 #pv .pages{display:flex;flex-direction:column;align-items:center;gap:14px;padding:16px 0}
-.sheet{background:#fff;width:210mm;height:297mm;padding:11mm 19mm 8mm;box-shadow:0 2px 14px rgba(0,0,0,.35);overflow:hidden;
+.sheet{background:#fff;width:210mm;height:297mm;padding:9mm 19mm 16mm;box-shadow:0 2px 14px rgba(0,0,0,.35);overflow:hidden;
   font-family:"TH Sarabun PSK","TH SarabunPSK","THSarabunPSK","TH Sarabun New",Sarabun,sans-serif;color:#000;--u:1pt}
 .sheet.land{width:297mm;height:210mm;padding:10mm 12mm}
 .fb-sarabun .sheet{--u:.86pt}
@@ -106,7 +106,7 @@ td.miss{background:var(--warn-l)!important}
 .sheet .stu{font-size:calc(16*var(--u));margin:3px 0 7px;display:flex;gap:30px;padding-left:26px}
 .sheet .stu b{font-weight:700}
 .sheet table{border-collapse:collapse;width:100%;font-size:calc(14*var(--u));table-layout:fixed}
-.sheet td,.sheet th{border:1px solid #000;padding:1px 6px;vertical-align:middle;line-height:1.2;height:7.3mm}
+.sheet td,.sheet th{border:1px solid #000;padding:1px 6px;vertical-align:middle;line-height:1.2;height:6.9mm}
 .sheet th{font-weight:700;text-align:center}
 .sheet td.c{text-align:center}
 .sheet td.b{font-weight:700}
@@ -117,11 +117,11 @@ td.miss{background:var(--warn-l)!important}
 .sheet .low{display:flex;align-items:stretch;margin-top:-1px;font-size:calc(14*var(--u))}
 .sheet .lc{width:85mm;flex:none;border-left:1px solid #000;border-bottom:1px solid #000}
 .sheet .lt{margin-left:-1px;margin-bottom:-1px;width:calc(100% + 1px)}
-.sheet .lt td{height:7.2mm;padding:1px 6px}
-.sheet .lt tr.sp td{height:7.2mm}
-.sheet .lt tr.ac td{height:6.2mm}
-.sheet .sigbox{flex:1;border-right:1px solid #000;border-bottom:1px solid #000;border-left:1px solid #000;text-align:center;padding-top:9mm;line-height:1.3;white-space:nowrap}
-.sheet .sigbox .blk{margin-bottom:5.5mm}
+.sheet .lt td{height:6.8mm;padding:1px 6px}
+.sheet .lt tr.sp td{height:6.8mm}
+.sheet .lt tr.ac td{height:5.8mm}
+.sheet .sigbox{flex:1;border-right:1px solid #000;border-bottom:1px solid #000;border-left:1px solid #000;text-align:center;padding-top:6mm;line-height:1.28;white-space:nowrap}
+.sheet .sigbox .blk{margin-bottom:4mm}
 .sheet .sigbox .ln{display:block}
 .sheet table.ov{font-size:calc(11*var(--u));table-layout:fixed}
 .sheet table.ov td.nm{white-space:nowrap;overflow:hidden}
@@ -156,7 +156,7 @@ td.miss{background:var(--warn-l)!important}
     <label class="f" for="lp">รหัสผ่าน</label>
     <input class="t" id="lp" type="password" autocomplete="current-password" required>
     <div class="err" id="loginErr"></div>
-    <div class="muted" style="font-size:.8rem;margin-top:8px;text-align:center">เวอร์ชันหน้าเว็บ v7 · 10 ต.ค. 2569</div>
+    <div class="muted" style="font-size:.8rem;margin-top:8px;text-align:center">เวอร์ชันหน้าเว็บ v8 · 10 ต.ค. 2569</div>
     <button class="btn" style="width:100%;margin-top:6px">เข้าสู่ระบบ</button>
     <div class="demo-note hide" id="demoNote">
       <b>โหมดทดลอง</b> (ยังไม่ได้ตั้งค่า API_URL — ข้อมูลเก็บในเบราว์เซอร์นี้เท่านั้น)<br>
@@ -648,7 +648,7 @@ function pp6Page(cls,no){
 }
 function openPreview(cls,nos){
   const pv=$('#pv');
-  pv.innerHTML=`<div class="bar"><b class="grow">ตัวอย่างก่อนพิมพ์ (v7) · ปพ.6 ป.${cls} (${nos.length} หน้า)</b><span class="muted">ในหน้าต่างพิมพ์: ขนาดกระดาษ A4 · ระยะขอบ “ไม่มี” · ปิด “ส่วนหัวและส่วนท้าย”</span><button class="btn" id="pvPrint">พิมพ์</button><button class="btn ghost" id="pvClose">ปิด</button></div><div class="pages">${nos.map(n=>pp6Page(cls,n)).join('')}</div>`;
+  pv.innerHTML=`<div class="bar"><b class="grow">ตัวอย่างก่อนพิมพ์ (v8) · ปพ.6 ป.${cls} (${nos.length} หน้า)</b><span class="muted">ในหน้าต่างพิมพ์: ขนาดกระดาษ A4 · ระยะขอบ “ไม่มี” · ปิด “ส่วนหัวและส่วนท้าย”</span><button class="btn" id="pvPrint">พิมพ์</button><button class="btn ghost" id="pvClose">ปิด</button></div><div class="pages">${nos.map(n=>pp6Page(cls,n)).join('')}</div>`;
   pv.classList.remove('hide'); $('#pvPrint').onclick=()=>window.print(); $('#pvClose').onclick=()=>pv.classList.add('hide');
 }
 function openSummaryPreview(cls){
