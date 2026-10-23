@@ -156,7 +156,7 @@ td.miss{background:var(--warn-l)!important}
     <label class="f" for="lp">รหัสผ่าน</label>
     <input class="t" id="lp" type="password" autocomplete="current-password" required>
     <div class="err" id="loginErr"></div>
-    <div class="muted" style="font-size:.8rem;margin-top:8px;text-align:center">เวอร์ชันหน้าเว็บ v8 · 10 ต.ค. 2569</div>
+    <div class="muted" style="font-size:.8rem;margin-top:8px;text-align:center">เวอร์ชันหน้าเว็บ v9 · 10 ต.ค. 2569</div>
     <button class="btn" style="width:100%;margin-top:6px">เข้าสู่ระบบ</button>
     <div class="demo-note hide" id="demoNote">
       <b>โหมดทดลอง</b> (ยังไม่ได้ตั้งค่า API_URL — ข้อมูลเก็บในเบราว์เซอร์นี้เท่านั้น)<br>
@@ -274,9 +274,17 @@ function rankMap(cls){
 /* ---------------- API ---------------- */
 async function api(action,payload={}){
   if(DEMO) return Demo.call(action,Object.assign({token:S.token},payload));
-  const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(Object.assign({action,token:S.token},payload))});
-  const txt=await r.text(); let j;
-  try{ j=JSON.parse(txt); }catch(e){ throw new Error('เซิร์ฟเวอร์ไม่ได้ตอบเป็นข้อมูลระบบ (มักเกิดจาก Apps Script ยังไม่ได้ Deploy แบบ “Anyone”, ยังไม่ได้ Deploy เวอร์ชันใหม่หลังวางโค้ด Code.gs หรือโค้ดมีข้อผิดพลาด) — ดูวิธีตรวจสอบจากผู้พัฒนา'); }
+  const body=JSON.stringify(Object.assign({action,token:S.token},payload));
+  let j=null, lastErr=null;
+  for(let t=0;t<3 && !j;t++){
+    if(t>0){ toast('กำลังเชื่อมต่อใหม่… (ครั้งที่ '+(t+1)+')'); await new Promise(r=>setTimeout(r,1200*t)); }
+    try{
+      const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body});
+      const txt=await r.text();
+      try{ j=JSON.parse(txt); }catch(e){ lastErr=new Error('เซิร์ฟเวอร์ไม่ได้ตอบเป็นข้อมูลระบบ (มักเกิดจากมีผู้ใช้พร้อมกันมาก, Apps Script ยังไม่ได้ Deploy แบบ “Anyone”/ยังไม่ได้ Deploy เวอร์ชันใหม่ หรือโค้ดมีข้อผิดพลาด) — ลองใหม่อีกครั้ง'); }
+    }catch(e){ lastErr=new Error('เชื่อมต่ออินเทอร์เน็ตไม่ได้'); }
+  }
+  if(!j) throw lastErr;
   if(j.error==='auth'){ doLogout(true); }
   return j;
 }
@@ -382,12 +390,16 @@ $('#loginForm').addEventListener('submit',async e=>{
     if(!r.ok){ $('#loginErr').textContent=r.message||'เข้าสู่ระบบไม่สำเร็จ'; return; }
     S.token=r.token; try{sessionStorage.setItem('pp6_tk',r.token);}catch(x){}
     $('#loginErr').textContent=''; $('#lp').value='';
-    await loadData(); startApp();
+    if(r.config) applyBoot(r); else await loadData();
+    startApp();
   }catch(err){ $('#loginErr').textContent='เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: '+err.message; }
 });
 async function loadData(){
   const r=await api('bootstrap');
   if(!r.ok) throw new Error(r.message||r.error||'โหลดข้อมูลไม่สำเร็จ');
+  applyBoot(r);
+}
+function applyBoot(r){
   Object.assign(S,{user:r.user,config:r.config,subjects:r.subjects,students:r.students,assignees:r.assignees||{},homeroomNames:r.homeroomNames||{},users:r.users||[]});
   // รักษาค่าที่ยังไม่ได้ส่งขึ้นเซิร์ฟเวอร์
   const sc=r.scores; Object.keys(pending).forEach(k=>{ if(pending[k]==='') delete sc[k]; else sc[k]=pending[k]; });
@@ -648,7 +660,7 @@ function pp6Page(cls,no){
 }
 function openPreview(cls,nos){
   const pv=$('#pv');
-  pv.innerHTML=`<div class="bar"><b class="grow">ตัวอย่างก่อนพิมพ์ (v8) · ปพ.6 ป.${cls} (${nos.length} หน้า)</b><span class="muted">ในหน้าต่างพิมพ์: ขนาดกระดาษ A4 · ระยะขอบ “ไม่มี” · ปิด “ส่วนหัวและส่วนท้าย”</span><button class="btn" id="pvPrint">พิมพ์</button><button class="btn ghost" id="pvClose">ปิด</button></div><div class="pages">${nos.map(n=>pp6Page(cls,n)).join('')}</div>`;
+  pv.innerHTML=`<div class="bar"><b class="grow">ตัวอย่างก่อนพิมพ์ (v9) · ปพ.6 ป.${cls} (${nos.length} หน้า)</b><span class="muted">ในหน้าต่างพิมพ์: ขนาดกระดาษ A4 · ระยะขอบ “ไม่มี” · ปิด “ส่วนหัวและส่วนท้าย”</span><button class="btn" id="pvPrint">พิมพ์</button><button class="btn ghost" id="pvClose">ปิด</button></div><div class="pages">${nos.map(n=>pp6Page(cls,n)).join('')}</div>`;
   pv.classList.remove('hide'); $('#pvPrint').onclick=()=>window.print(); $('#pvClose').onclick=()=>pv.classList.add('hide');
 }
 function openSummaryPreview(cls){
